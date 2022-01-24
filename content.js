@@ -63,7 +63,7 @@ function pollTimeline(){
     } else {
         console.log(timeline);
         imageQuery(timeline);
-        inout(pollTimeline, pollRate);
+        setTimeout(pollTimeline, pollRate);
     }
 }
 
