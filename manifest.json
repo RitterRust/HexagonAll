@@ -1,7 +1,7 @@
 {
-    "name": "hexagon pfp",
-    "description": "Makes all Twitter profiles have a hexagonally shaped profile picture",
-    "version": "0.1",
+    "name": "HexagonAll",
+    "description": "Hexagonal profile pictures for everybody",
+    "version": "1.0",
     "manifest_version": 3,
     "permissions": ["tabs"],
     "background": {
@@ -13,5 +13,13 @@
           "js": ["content.js"],
           "run_at": "document_end"
         }
-    ]
+    ],
+    "action": {
+      "default_icon": {
+        "16": "/images/hexagon_16.png",
+        "32": "/images/hexagon_32.png",
+        "48": "/images/hexagon_48.png",
+        "128": "/images/hexagon_128.png"
+      }
+    }
 }
