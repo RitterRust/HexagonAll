@@ -1,36 +1,45 @@
 const profileString = "https://pbs.twimg.com/profile_images";
+const pollRate = 500;
 let reactRoot = document.getElementById("react-root");
+let primaryColumn;
 let timeline;
 
-createClipPath();
+const observer = new MutationObserver((mutations) => {
+    for(let mutation of mutations){
+        const nodes = mutation.addedNodes;
+        if(!nodes) return;
+        for(let node of nodes){
+            imageQuery(node);
+        }
+    }
+})
+
+pageLoad();
 accountMenuImage();
-getRecommended();
-getTimeline();
-timelineOnwheel();
-getLayers();
 
 chrome.runtime.onMessage.addListener(
     (msg) => {
         if(msg === "url changed"){
-            createClipPath();
-            timelineOnwheel();
-            getRecommended();
+            timeline = undefined;
+            pageLoad();
         }
     }
 );
 
+window.onresize = getRecommended;
+
+function pageLoad(){
+    createClipPath();
+    getRecommended();
+    pollTimeline();
+    getLayers();
+}
+
 function getLayers(){
-    if(document.getElementById("layers")){
-        const layersObserver = new MutationObserver((mutations) => {
-            for(let mutation of mutations){
-                const nodes = mutation.addedNodes;
-                for(let node of nodes){
-                    console.log(node);
-                    imageQuery(node);
-                }
-            }
-        })
-        layersObserver.observe(document.getElementById("layers"), {childList: true, subtree: false});
+    let layers = document.getElementById("layers")
+    if(layers){
+        if(imageQuery(layers) === 0) requestAnimationFrame(getLayers);
+        observer.observe(layers, {childList: true, subtree: false});
     }
     else{
         requestAnimationFrame(getLayers);
@@ -39,7 +48,6 @@ function getLayers(){
 
 function accountMenuImage(){
     const accountImageContainer = reactRoot.getElementsByTagName("header")[0]?.querySelector("[role='presentation']")?.parentElement;
-    console.log(accountImageContainer);
     if(accountImageContainer) {
         setAttributes(accountImageContainer);
         return;
@@ -48,26 +56,14 @@ function accountMenuImage(){
     }
 }
 
-function getTimeline(){
+function pollTimeline(){
     if(!timeline){
-    timeline = reactRoot.querySelector("div[data-testid='primaryColumn']");
-    } else if(timeline.querySelector("div[aria-label^='Timeline:']")?.firstChild.childElementCount){
-        return;
-    }
-    requestAnimationFrame(getTimeline);
-}
-
-function timelineOnwheel(){
-    let timelineWrapper = reactRoot.querySelector("div[data-testid='primaryColumn']");
-        if (timelineWrapper){
-            timeline = timelineWrapper;
-        function onWheelAction() {
-            imageQuery(timeline);
-        }
-        reactRoot.onwheel = onWheelAction;
-
+        timeline = reactRoot.querySelector("div[data-testid='primaryColumn']");
+        requestAnimationFrame(pollTimeline);
     } else {
-        requestAnimationFrame(timelineOnwheel);
+        console.log(timeline);
+        imageQuery(timeline);
+        inout(pollTimeline, pollRate);
     }
 }
 
@@ -97,12 +93,16 @@ function getContainer(img){
 
 function imageQuery(node) {
     let images = node.getElementsByTagName("img");
+    if(images.length === 0) return 0;
+    let imageCount = 0;
     for(let i = 0; i < images.length; i++){
         let image = images.item(i);
         if(image.src.startsWith(profileString)){
             setAttributes(getContainer(image));
+            imageCount++;
         }
     }
+    return imageCount;
 }
 
 function setAttributes(container){
