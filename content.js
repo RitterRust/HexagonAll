@@ -61,7 +61,6 @@ function pollTimeline(){
         timeline = reactRoot.querySelector("div[data-testid='primaryColumn']");
         requestAnimationFrame(pollTimeline);
     } else {
-        console.log(timeline);
         imageQuery(timeline);
         setTimeout(pollTimeline, pollRate);
     }
