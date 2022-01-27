@@ -1,18 +1,8 @@
-const profileString = "https://pbs.twimg.com/profile_images";
-const pollRate = 500;
+const ProfileString = "https://pbs.twimg.com/profile_images";
+const ProfileStringDefault = "https://abs.twimg.com/sticky/default_profile_images"
+const PollRate = 500;
 let reactRoot = document.getElementById("react-root");
-let primaryColumn;
-let timeline;
-
-const observer = new MutationObserver((mutations) => {
-    for(let mutation of mutations){
-        const nodes = mutation.addedNodes;
-        if(!nodes) return;
-        for(let node of nodes){
-            imageQuery(node);
-        }
-    }
-})
+let main;
 
 pageLoad();
 
@@ -25,25 +15,10 @@ browser.runtime.onMessage.addListener(
     }
 );
 
-window.onresize = getRecommended;
-
 function pageLoad(){
     createClipPath();
-    getRecommended();
-    pollTimeline();
-    getLayers();
+    pollMain();
     accountMenuImage();
-}
-
-function getLayers(){
-    let layers = document.getElementById("layers")
-    if(layers){
-        if(imageQuery(layers) === 0) requestAnimationFrame(getLayers);
-        observer.observe(layers, {childList: true, subtree: false});
-    }
-    else{
-        requestAnimationFrame(getLayers);
-    }
 }
 
 function accountMenuImage(){
@@ -56,29 +31,15 @@ function accountMenuImage(){
     }
 }
 
-function pollTimeline(){
-    if(!timeline){
-        timeline = reactRoot.querySelector("div[data-testid='primaryColumn']");
-        requestAnimationFrame(pollTimeline);
+function pollMain(){
+    if(main){
+        console.log(main);
+        imageQuery(main);
+        console.log("what")
+        setTimeout(pollMain, PollRate);
     } else {
-        imageQuery(timeline);
-        setTimeout(pollTimeline, pollRate);
-    }
-}
-
-function getRecommended(){
-    let recommended = reactRoot.getElementsByTagName("aside").item(0);
-        if (recommended){
-            let images = recommended.getElementsByTagName("img");
-            if(images.length === 0){
-                requestAnimationFrame(getRecommended);
-            }
-            for (let image of images){
-                setAttributes(getContainer(image));
-            }
-        return;
-    } else {
-        requestAnimationFrame(getRecommended);
+        main = reactRoot.getElementsByTagName("main")[0];
+        requestAnimationFrame(pollMain);
     }
 }
 
@@ -96,7 +57,7 @@ function imageQuery(node) {
     let imageCount = 0;
     for(let i = 0; i < images.length; i++){
         let image = images.item(i);
-        if(image.src.startsWith(profileString)){
+        if(image.src.startsWith(ProfileString) || image.src.startsWith(ProfileStringDefault)){
             setAttributes(getContainer(image));
             imageCount++;
         }
