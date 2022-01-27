@@ -9,7 +9,6 @@ pageLoad();
 browser.runtime.onMessage.addListener(
     (msg) => {
         if(msg === "url changed"){
-            timeline = undefined;
             pageLoad();
         }
     }
@@ -33,9 +32,7 @@ function accountMenuImage(){
 
 function pollMain(){
     if(main){
-        console.log(main);
         imageQuery(main);
-        console.log("what")
         setTimeout(pollMain, PollRate);
     } else {
         main = reactRoot.getElementsByTagName("main")[0];
@@ -53,16 +50,12 @@ function getContainer(img){
 
 function imageQuery(node) {
     let images = node.getElementsByTagName("img");
-    if(images.length === 0) return 0;
-    let imageCount = 0;
     for(let i = 0; i < images.length; i++){
         let image = images.item(i);
         if(image.src.startsWith(ProfileString) || image.src.startsWith(ProfileStringDefault)){
             setAttributes(getContainer(image));
-            imageCount++;
         }
     }
-    return imageCount;
 }
 
 function setAttributes(container){
